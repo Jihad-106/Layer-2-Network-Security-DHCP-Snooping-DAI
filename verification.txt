@@ -1,0 +1,159 @@
+# Layer 2 Network Security - Verification
+
+==================================================
+
+1. VERIFY DHCP SNOOPING
+   ==================================================
+
+SW1#show ip dhcp snooping
+
+Expected:
+
+* DHCP Snooping: Enabled
+* VLAN 1: Enabled
+* Fa0/1: Trusted
+
+==================================================
+2. VERIFY DHCP BINDING TABLE
+============================
+
+SW1#show ip dhcp snooping binding
+
+Expected:
+
+PC1 -> 192.168.10.11 -> Fa0/2
+PC2 -> 192.168.10.12 -> Fa0/3
+
+The binding table contains the legitimate
+DHCP-learned IP-to-MAC information.
+
+==================================================
+3. VERIFY DAI
+=============
+
+SW1#show ip arp inspection
+
+Expected:
+
+VLAN 1       : Enabled / Active
+Source MAC   : Enabled
+Destination MAC : Enabled
+IP Validation   : Enabled
+
+==================================================
+4. VERIFY DAI INTERFACES
+========================
+
+SW1#show ip arp inspection interfaces
+
+Expected:
+
+Fa0/1 -> Trusted
+Fa0/2 -> Untrusted
+Fa0/3 -> Untrusted
+Fa0/4 -> Untrusted
+
+==================================================
+5. VERIFY DAI STATISTICS
+========================
+
+SW1#show ip arp inspection statistics
+
+Check:
+
+* Forwarded packets
+* Dropped packets
+* DHCP drops
+* Source MAC failures
+* Destination MAC failures
+* IP validation failures
+
+==================================================
+6. TEST LEGITIMATE CONNECTIVITY
+===============================
+
+PC1:
+
+ping 192.168.10.1
+
+PC2:
+
+ping 192.168.10.1
+
+Expected:
+Successful replies from R1.
+
+==================================================
+7. TEST DHCP
+============
+
+PC1:
+ipconfig /release
+ipconfig /renew
+
+PC2:
+ipconfig /release
+ipconfig /renew
+
+Expected:
+
+PC1 -> 192.168.10.11
+PC2 -> 192.168.10.12
+Gateway -> 192.168.10.1
+DNS -> 8.8.8.8
+
+==================================================
+8. ROGUE DHCP TEST
+==================
+
+Rogue DHCP Server:
+192.168.10.100
+
+Connected to:
+SW1 Fa0/4
+
+Fa0/4 = Untrusted
+
+Expected:
+Rogue DHCP traffic is not treated as trusted
+DHCP-server traffic.
+
+==================================================
+9. ARP SECURITY TEST
+====================
+
+PC1:
+
+arp -a
+
+DAI uses the DHCP Snooping binding database
+to validate ARP traffic on untrusted ports.
+
+Packet Tracer does not provide a full
+arpspoof/Ettercap-style attack utility.
+
+==================================================
+10. IP SOURCE GUARD
+===================
+
+Command tested:
+
+interface range fa0/2-4
+ip verify source
+
+Result:
+Unsupported by the selected Packet Tracer
+2960 image.
+
+Therefore, IP Source Guard is not claimed
+as implemented in this project.
+
+==================================================
+FINAL RESULT
+============
+
+DHCP Snooping       -> Implemented
+DAI                 -> Implemented
+ARP Validation      -> Implemented
+Rogue DHCP Defense  -> Demonstrated
+IP Source Guard     -> Not supported by image
