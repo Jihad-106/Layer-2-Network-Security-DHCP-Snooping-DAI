@@ -1,0 +1,120 @@
+# Layer 2 Network Security
+
+# DHCP Snooping & Dynamic ARP Inspection
+
+==================================================
+R1 - LEGITIMATE DHCP SERVER / GATEWAY
+=====================================
+
+enable
+configure terminal
+
+hostname R1
+
+interface gigabitEthernet 0/0
+ip address 192.168.10.1 255.255.255.0
+no shutdown
+exit
+
+ip dhcp excluded-address 192.168.10.1 192.168.10.10
+
+ip dhcp pool LAN
+network 192.168.10.0 255.255.255.0
+default-router 192.168.10.1
+dns-server 8.8.8.8
+exit
+
+end
+write memory
+
+==================================================
+SW1 - BASIC CONFIGURATION
+=========================
+
+enable
+configure terminal
+
+hostname SW1
+
+interface fastEthernet 0/1
+switchport mode access
+exit
+
+interface range fastEthernet 0/2-4
+switchport mode access
+exit
+
+==================================================
+DHCP SNOOPING
+=============
+
+ip dhcp snooping
+ip dhcp snooping vlan 1
+
+interface fastEthernet 0/1
+ip dhcp snooping trust
+exit
+
+! Packet Tracer compatibility
+no ip dhcp snooping information option
+
+==================================================
+DYNAMIC ARP INSPECTION (DAI)
+============================
+
+ip arp inspection vlan 1
+
+interface fastEthernet 0/1
+ip arp inspection trust
+exit
+
+ip arp inspection validate src-mac dst-mac ip
+
+end
+write memory
+
+==================================================
+PORT ROLES
+==========
+
+Fa0/1  -> R1 / DHCP Server -> TRUSTED
+Fa0/2  -> PC1             -> UNTRUSTED
+Fa0/3  -> PC2             -> UNTRUSTED
+Fa0/4  -> Rogue DHCP      -> UNTRUSTED
+
+==================================================
+ROGUE DHCP SERVER - SERVER-PT
+=============================
+
+IP Address      : 192.168.10.100
+Subnet Mask     : 255.255.255.0
+Default Gateway : 192.168.10.1
+
+DHCP Pool:
+Pool Name       : ROGUE
+Default Gateway : 192.168.10.100
+DNS Server      : 192.168.10.100
+Start IP        : 192.168.10.200
+Subnet Mask     : 255.255.255.0
+Maximum Users   : 20
+
+==================================================
+VERIFICATION COMMANDS
+=====================
+
+show ip dhcp snooping
+show ip dhcp snooping binding
+
+show ip arp inspection
+show ip arp inspection interfaces
+show ip arp inspection statistics
+
+==================================================
+IP SOURCE GUARD
+===============
+
+! Not implemented.
+! The selected Packet Tracer 2960 image does not
+! support the following command:
+
+ip verify source
