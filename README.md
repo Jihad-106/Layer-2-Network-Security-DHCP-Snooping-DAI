@@ -13,6 +13,10 @@ DHCP Binding Database
 ARP Validation
 🏗️ Topology
        ![Network Topology](topology.png)
+
+
+
+       
 🔐 Security Configuration
 Port	Device	Status
 Fa0/1	R1	Trusted
